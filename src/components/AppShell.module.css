@@ -1,0 +1,246 @@
+/* src/components/AppShell.module.css */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--slate-900);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+
+.logoMark {
+  width: 78px;
+  height: 78px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logoText {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: white;
+}
+
+/* ── Nav ── */
+.nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  color: var(--slate-400);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.12s ease;
+  position: relative;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+}
+
+.navActive {
+  background: rgba(37, 99, 235, .25);
+  color: #fff;
+  font-weight: 600;
+}
+
+.navActive .navIcon {
+  color: var(--blue-400);
+}
+
+.navIcon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.navBadge {
+  background: var(--red-500);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ── User ── */
+.sidebarUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  margin: 0;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--blue-600);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userId {
+  font-size: 11px;
+  color: var(--slate-500);
+  font-family: var(--font-mono);
+}
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Bottom bar ── */
+.bottomBar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--slate-900);
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  z-index: 100;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+  /* iPhone notch */
+}
+
+.bottomBarItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--slate-500);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s;
+  position: relative;
+}
+
+.bottomBarItem:hover {
+  color: var(--slate-300);
+}
+
+.bottomBarActive {
+  color: var(--blue-500) !important;
+}
+
+.bottomBarIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottomBarBadge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 18px);
+  background: var(--red-500);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+/* Hides sidebar and adds padding to main on mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .bottomBar {
+    display: flex;
+  }
+
+  .main {
+    padding-bottom: 72px;
+  }
+}

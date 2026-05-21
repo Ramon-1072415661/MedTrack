@@ -1,0 +1,489 @@
+/* src/screens/screens.module.css — layout helpers shared across all screens */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 40px;
+  min-height: 100%;
+}
+
+.content {
+  padding: 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* horizontal scroll strip */
+.hscroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+
+.hscroll>* {
+  scroll-snap-align: start;
+}
+
+/* 2-col grid */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 3-col grid */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* stat row */
+.statRow {
+  display: flex;
+  gap: 12px;
+}
+
+.statBox {
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statNum {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Quick action grid */
+.quickGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quickBtn {
+  background: var(--c);
+  border-radius: var(--radius-lg);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: filter 0.15s, transform 0.15s;
+  border: none;
+  cursor: pointer;
+}
+
+.quickBtn:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.quickIcon {
+  font-size: 20px;
+  color: var(--t);
+}
+
+.quickLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t);
+}
+
+/* Auth pages */
+.authPage {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.authMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.authCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+}
+
+.authCardWide {
+  max-width: 560px;
+}
+
+.authHeader {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.authLogoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authLogoMark {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.authLogoMark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.authLogoText {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.authCardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary-bg);
+  border: 1.5px solid var(--blue-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 16px;
+}
+
+.authCardTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.authCardSubtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.authLink {
+  color: var(--blue-600);
+  font-weight: 600;
+}
+
+.authLink:hover {
+  text-decoration: underline;
+}
+
+.formRow {
+  display: flex;
+  gap: 12px;
+}
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Password check list */
+.pwChecks {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pwCheck {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwCheckOk {
+  color: var(--green-600);
+}
+
+/* Generic table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--color-text-muted);
+  padding: 0 0 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.table td {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Toggle row */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.toggleRow:last-of-type {
+  border-bottom: none;
+}
+
+.toggleRowIcon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.toggleRowText {
+  flex: 1;
+}
+
+.toggleRowLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.toggleRowDesc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+/* Profile grid */
+.profileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 0 28px;
+}
+
+@media (max-width: 900px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Segment control */
+.segControl {
+  display: flex;
+  gap: 4px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+
+.segBtn {
+  flex: 1;
+  padding: 6px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: all .15s;
+}
+
+.segBtnActive {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Welcome ── */
+.welcomeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  max-width: 960px;
+  width: 100%;
+}
+
+.welcomeHero {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.welcomeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary-bg);
+  border: 1px solid var(--blue-100);
+  border-radius: 999px;
+  padding: 6px 14px;
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--blue-600);
+  font-weight: 500;
+}
+
+.welcomeBadgeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.welcomeTitle {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.welcomeDesc {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.welcomeFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.welcomeFeatureRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.welcomeFeatureIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.welcomeFeatureTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.welcomeFeatureDesc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* Mobile — stack hero above card */
+@media (max-width: 768px) {
+  .page {
+    padding-bottom: 0;
+  }
+
+  .welcomeGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .welcomeTitle {
+    font-size: 30px;
+  }
+}

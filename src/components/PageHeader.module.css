@@ -1,0 +1,13 @@
+/* src/components/PageHeader.module.css */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 0;
+  flex-wrap: wrap;
+}
+.title    { font-size: 22px; font-weight: 800; color: var(--color-text); letter-spacing: -0.4px; }
+.subtitle { font-size: 13px; color: var(--color-text-muted); margin-top: 2px; font-weight: 400; }
+.actions  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }

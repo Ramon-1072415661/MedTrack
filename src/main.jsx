@@ -6,7 +6,7 @@ import './styles/global.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import AppShell from './components/AppShell.jsx'
 
-import { Profile, Welcome, Login, SignUp, ForgotPassword } from './screens/index.js'
+import { Profile, Welcome, Login, SignUp, ForgotPassword, Inventory, Notifications, Dashboard } from './screens/index.js'
 import { SCREENS, APP_SCREENS_SET } from './config/screens.js'
 
 export default function App() {
@@ -31,6 +31,9 @@ export default function App() {
   const activeScreen = APP_SCREENS_SET.has(screen) ? screen : SCREENS.PROFILE.id
   const appScreens = {
     profile: <Profile onNavigate={navigate} />,
+    inventory: <Inventory onNavigate={navigate} />,
+    notifications: <Notifications onNavigate={navigate} />,
+    dashboard: <Dashboard onNavigate={navigate} />,
   }
 
   return (

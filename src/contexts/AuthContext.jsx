@@ -5,10 +5,24 @@ import * as authService from '../services/authService'
 
 const AuthContext = createContext({})
 
+const DEV_MODE = true // ← false quando conectar o Supabase
+
+const DEV_USER = {
+  id: 'dev-user-id',
+  email: 'dev@teste.com',
+  created_at: new Date().toISOString(),
+}
+
+const DEV_PROFILE = {
+  id: 'dev-user-id',
+  full_name: 'Dev User',
+  avatar_url: null,
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(DEV_MODE ? DEV_USER : null)
+  const [profile, setProfile] = useState(DEV_MODE ? DEV_PROFILE : null)
+  const [loading, setLoading] = useState(false)
 
   async function loadProfile(userId) {
     try {
@@ -17,8 +31,6 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('fetchProfile:', err)
       setProfile(null)
-
-      // Permission Error — signout user to avoid unauthenticated access
       if (err?.code === '42501') {
         await authService.signOut()
       }
@@ -26,21 +38,20 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    if (DEV_MODE) return
+
     authService.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       setLoading(false)
-
       if (currentUser) loadProfile(currentUser.id)
     })
 
     const { data: { subscription } } = authService.onAuthStateChange(
       (event, session) => {
         if (event === 'INITIAL_SESSION') return
-
         const currentUser = session?.user ?? null
         setUser(currentUser)
-
         if (currentUser) {
           loadProfile(currentUser.id)
         } else {

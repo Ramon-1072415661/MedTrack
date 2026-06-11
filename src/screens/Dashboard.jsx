@@ -3,344 +3,332 @@ import PageHeader from '../components/PageHeader'
 import { useAuth } from '../contexts/AuthContext'
 import s from './screens.module.css'
 
+const medications = [
+  {
+    id: 1,
+    name: 'Dipirona',
+    dosage: '500mg',
+    unit: '1 tablet',
+    icon: '💊',
+    status: 'done',
+    taken: 22,
+    total: 30,
+    time: '08:00',
+    description: 'Take with water. Avoid taking on an empty stomach.',
+    stockAlert: false,
+    paused: false,
+  },
+  {
+    id: 2,
+    name: 'Amoxicillin',
+    dosage: '250mg',
+    unit: '1 capsule',
+    icon: '💊',
+    status: 'pending',
+    taken: 14,
+    total: 21,
+    time: '13:00',
+    description: 'Antibiotic. Complete the treatment even if symptoms improve',
+    stockAlert: false,
+    paused: false,
+  },
+  {
+    id: 3,
+    name: 'Vitamina D',
+    dosage: '2000 UI',
+    unit: '1 capsule',
+    icon: '☀️',
+    status: 'pending',
+    taken: 8,
+    total: 30,
+    time: '20:00',
+    description: 'Take with meals for better absorption.',
+    stockAlert: false,
+    paused: false,
+  },
+  {
+    id: 4,
+    name: 'Losartana',
+    dosage: '50mg',
+    unit: '1 tablet',
+    icon: '🫀',
+    status: 'done',
+    taken: 30,
+    total: 30,
+    time: '07:00',
+    description: null,
+    stockAlert: false,
+    paused: false,
+    continuous: true,
+  },
+  {
+    id: 5,
+    name: 'Omeprazol',
+    dosage: '20mg',
+    unit: '1 capsule',
+    icon: '💊',
+    status: 'done',
+    taken: 18,
+    total: 30,
+    time: '07:30',
+    description: 'Take on an empty stomach, 30 min before breakfast.',
+    stockAlert: true,
+    stockRemaining: 3,
+    paused: false,
+  },
+  {
+    id: 6,
+    name: 'Metformina',
+    dosage: '850mg',
+    unit: '1 tablet',
+    icon: '💊',
+    status: 'paused',
+    taken: 10,
+    total: 30,
+    time: null,
+    description: null,
+    stockAlert: false,
+    paused: true,
+  },
+]
+
+function getProgressColor(status, percent) {
+  if (status === 'done') return 'var(--green-500)'
+  if (percent >= 60) return 'var(--blue-500)'
+  return 'var(--amber-500)'
+}
+
+function MedCard({ med }) {
+  const percent = Math.round((med.taken / med.total) * 100)
+  const progressColor = getProgressColor(med.status, percent)
+
+  return (
+    <div
+      style={{
+        background: 'var(--slate-900)',
+        border: `1px solid ${med.stockAlert ? 'var(--red-800)' : 'var(--slate-700)'}`,
+        borderRadius: 14,
+        padding: 18,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        opacity: med.paused ? 0.6 : 1,
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: 'var(--slate-800)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            flexShrink: 0,
+          }}
+        >
+          {med.icon}
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <p style={{ fontWeight: 700, color: 'var(--slate-50)', fontSize: 15 }}>
+            {med.name}
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--slate-400)', marginTop: 2 }}>
+            {med.dosage} · {med.unit}
+          </p>
+        </div>
+
+        {med.paused && <Badge variant="default">Pausado</Badge>}
+        {med.stockAlert && !med.paused && <Badge variant="danger">Estoque baixo</Badge>}
+        {!med.paused && !med.stockAlert && med.status === 'done' && (
+          <Badge variant="success">Tomado</Badge>
+        )}
+        {!med.paused && !med.stockAlert && med.status === 'pending' && (
+          <Badge variant="warning">Pendente</Badge>
+        )}
+      </div>
+
+      {/* Progress */}
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 6,
+          }}
+        >
+          <span style={{ fontSize: 12, color: 'var(--slate-400)' }}>
+            Progresso do tratamento
+          </span>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: med.paused ? 'var(--slate-500)' : progressColor,
+            }}
+          >
+            {med.taken}/{med.total}
+          </span>
+        </div>
+
+        <div
+          style={{
+            height: 5,
+            background: 'var(--slate-700)',
+            borderRadius: 999,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              width: `${percent}%`,
+              borderRadius: 999,
+              background: med.paused ? 'var(--slate-600)' : progressColor,
+              transition: 'width .4s ease',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 11, color: med.stockAlert ? 'var(--red-400)' : 'var(--slate-400)' }}>
+          {med.stockAlert
+            ? `⚠ ${med.stockRemaining} doses restantes`
+            : med.continuous
+            ? 'Uso contínuo'
+            : med.paused
+            ? 'Tratamento pausado'
+            : 'Hoje às'}
+        </span>
+
+        {med.time && (
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--slate-200)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            ⏰ {med.time}
+          </span>
+        )}
+      </div>
+
+      {/* Description */}
+      {med.description && (
+        <p
+          style={{
+            fontSize: 12,
+            color: 'var(--slate-400)',
+            padding: '8px 10px',
+            background: 'var(--slate-800)',
+            borderRadius: 8,
+            borderLeft: '2px solid var(--slate-600)',
+            lineHeight: 1.5,
+          }}
+        >
+          {med.description}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
+
+  const totalStock = 142
+  const totalMeds = medications.length
+  const pausedCount = medications.filter((m) => m.paused).length
+  const streakDays = 14
 
   return (
     <div className={s.page}>
       <PageHeader
-        title={`Welcome, ${user?.name || 'Patient'} 👋`}
-        subtitle="Here's your health summary today"
+        title={`Dashboard`}
+        subtitle="Track your medications and treatment progress"
       />
 
       <div className={s.content}>
 
-        {/* RESUMO */}
+        {/* STATS */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-            gap: 16
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 14,
+            marginBottom: 16,
           }}
         >
           <Card>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  width: 90,
-                  height: 90
-                }}
-              >
-                <svg width="90" height="90">
-                  <circle
-                    cx="45"
-                    cy="45"
-                    r="35"
-                    fill="none"
-                    stroke="var(--slate-200)"
-                    strokeWidth="10"
-                  />
-
-                  <circle
-                    cx="45"
-                    cy="45"
-                    r="35"
-                    fill="none"
-                    stroke="var(--green-500)"
-                    strokeWidth="10"
-                    strokeDasharray="220"
-                    strokeDashoffset="18"
-                    transform="rotate(-90 45 45)"
-                    strokeLinecap="round"
-                  />
-                </svg>
-
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 800,
-                    fontSize: 18
-                  }}
-                >
-                  92%
-                </div>
-              </div>
-
-              <div>
-                <p style={{ color: 'var(--slate-500)' }}>
-                  Adherence Rate
-                </p>
-
-                <Badge variant="success">
-                  Excellent
-                </Badge>
-              </div>
-            </div>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+              Dose Inventory
+            </p>
+            <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--slate-50)', lineHeight: 1 }}>
+              {totalStock}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 6 }}>
+              available doses
+            </p>
           </Card>
 
           <Card>
-            <p
-              style={{
-                color: 'var(--slate-500)',
-                fontSize: 13
-              }}
-            >
-              Inventory Alerts
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+              Registered Medications
+            </p>
+            <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--slate-50)', lineHeight: 1 }}>
+              {totalMeds}
             </p>
 
-            <div
-              style={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4
-              }}
-            >
-              <Badge variant="warning">
-                Dipirona - 3 units
-              </Badge>
-
-              <Badge variant="warning">
-                Amoxicillin - 2 units
-              </Badge>
-            </div>
           </Card>
 
           <Card>
-            <SectionHeader title="Medication Timeline" />
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+              Paused Treatments
+            </p>
+            <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--amber-400)', lineHeight: 1 }}>
+              {pausedCount}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 6 }}>
+              in pause
+            </p>
+          </Card>
 
-            <div
-              style={{
-                padding: '30px 10px'
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  height: 80
-                }}
-              >
-                {/* Linha principal */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 35,
-                    left: 0,
-                    right: 0,
-                    height: 4,
-                    background: 'var(--slate-200)',
-                    borderRadius: 999
-                  }}
-                />
-
-                {[
-                  {
-                    name: 'Dipirona',
-                    hour: 8
-                  },
-                  {
-                    name: 'Amoxicillin',
-                    hour: 13
-                  },
-                  {
-                    name: 'Vitamin D',
-                    hour: 20
-                  }
-                ].map((med) => (
-                  <div
-                    key={med.name}
-                    style={{
-                      position: 'absolute',
-                      left: `${(med.hour / 23) * 100}%`,
-                      top: 0,
-                      transform: 'translateX(-50%)',
-                      textAlign: 'center'
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        marginBottom: 6,
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {med.name}
-                    </div>
-
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: '50%',
-                        background: 'var(--blue-500)',
-                        margin: '0 auto'
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        marginTop: 8,
-                        fontSize: 12,
-                        fontWeight: 600
-                      }}
-                    >
-                      {String(med.hour).padStart(2, '0')}:00
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Escala de horas */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 25,
-                  fontSize: 11,
-                  color: 'var(--slate-500)'
-                }}
-              >
-                <span>00:00</span>
-                <span>04:00</span>
-                <span>08:00</span>
-                <span>12:00</span>
-                <span>16:00</span>
-                <span>20:00</span>
-                <span>23:00</span>
+          <Card style={{ border: '1px solid var(--green-800)' }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+              days without forgetting
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 28 }}>🔥</span>
+              <div>
+                <p style={{ fontSize: 36, fontWeight: 900, color: 'var(--green-400)', lineHeight: 1 }}>
+                  {streakDays}
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 4 }}>
+                  consecutive days
+                </p>
               </div>
             </div>
           </Card>
-          </div>
+        </div>
 
-          
         {/* MEDICAMENTOS */}
         <Card>
-          <SectionHeader title="Today's Schedule" />
+          <SectionHeader title="Medicamentos em uso" />
 
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: 12,
             }}
           >
-            <div className={s.toggleRow}>
-              <span style={{ fontSize: 22 }}>💊</span>
-
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 700 }}>
-                  Dipirona
-                </p>
-
-                <p
-                  style={{
-                    color: 'var(--slate-500)',
-                    fontSize: 13
-                  }}
-                >
-                  08:00 AM
-                </p>
-              </div>
-
-              <Badge variant="success">
-                Done
-              </Badge>
-            </div>
-
-            <div className={s.toggleRow}>
-              <span style={{ fontSize: 22 }}>💊</span>
-
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 700 }}>
-                  Amoxicillin
-                </p>
-
-                <p
-                  style={{
-                    color: 'var(--slate-500)',
-                    fontSize: 13
-                  }}
-                >
-                  01:00 PM
-                </p>
-              </div>
-
-              <Badge variant="warning">
-                Pending
-              </Badge>
-            </div>
-
-            <div className={s.toggleRow}>
-              <span style={{ fontSize: 22 }}>💊</span>
-
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 700 }}>
-                  Vitamin D
-                </p>
-
-                <p
-                  style={{
-                    color: 'var(--slate-500)',
-                    fontSize: 13
-                  }}
-                >
-                  08:00 PM
-                </p>
-              </div>
-
-              <Badge variant="warning">
-                Pending
-              </Badge>
-            </div>
+            {medications.map((med) => (
+              <MedCard key={med.id} med={med} />
+            ))}
           </div>
         </Card>
 
-        {/* LEMBRETE */}
-        <Card>
-          <SectionHeader title="Upcoming Reminder" />
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div>
-              <p
-                style={{
-                  fontWeight: 700
-                }}
-              >
-                Dipirona
-              </p>
-
-              <p
-                style={{
-                  color: 'var(--slate-500)'
-                }}
-              >
-                Next dose at 08:00 AM
-              </p>
-            </div>
-
-            <Button size="sm">
-              View
-            </Button>
-          </div>
-        </Card>
       </div>
     </div>
   )

@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { Card, SectionHeader, Badge, Button } from '../components'
 import PageHeader from '../components/PageHeader'
 import { useAuth } from '../contexts/AuthContext'
 import s from './screens.module.css'
 
-const medications = [
+const initialMedications = [
   {
     id: 1,
     name: 'Dipirona',
@@ -98,12 +99,14 @@ function getProgressColor(status, percent) {
   return 'var(--amber-500)'
 }
 
-function MedCard({ med }) {
+function MedCard({ med, onMarkTaken, onTogglePause }) {
   const percent = Math.round((med.taken / med.total) * 100)
   const progressColor = getProgressColor(med.status, percent)
+  const isTodayTaken = med.status === 'done'
 
   return (
     <div
+      onClick={() => !med.paused && onMarkTaken(med.id)}
       style={{
         background: 'var(--color-surface)',
         border: `1px solid ${med.stockAlert ? 'var(--color-danger)' : 'var(--color-border)'}`,
@@ -113,6 +116,22 @@ function MedCard({ med }) {
         flexDirection: 'column',
         gap: 12,
         opacity: med.paused ? 0.6 : 1,
+        cursor: med.paused ? 'default' : 'pointer',
+        transition: 'all 0.2s ease',
+        transform: !med.paused ? 'scale(1)' : 'scale(0.98)',
+        boxShadow: !med.paused ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+      }}
+      onMouseEnter={(e) => {
+        if (!med.paused) {
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+          e.currentTarget.style.transform = 'scale(1.02)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!med.paused) {
+          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
+          e.currentTarget.style.transform = 'scale(1)'
+        }
       }}
     >
       {/* Header */}
@@ -122,12 +141,13 @@ function MedCard({ med }) {
             width: 36,
             height: 36,
             borderRadius: 10,
-            background: 'var(--color-bg-subtle)',
+            background: isTodayTaken ? 'var(--green-100)' : 'var(--color-bg-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 18,
             flexShrink: 0,
+            transition: 'background 0.3s ease',
           }}
         >
           {med.icon}
@@ -142,13 +162,33 @@ function MedCard({ med }) {
           </p>
         </div>
 
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onTogglePause(med.id)
+          }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 18,
+            opacity: 0.7,
+            transition: 'opacity 0.2s',
+          }}
+          onMouseEnter={(e) => (e.target.style.opacity = '1')}
+          onMouseLeave={(e) => (e.target.style.opacity = '0.7')}
+          title={med.paused ? 'Resume' : 'Pause'}
+        >
+          {med.paused ? '⏸️' : '▶️'}
+        </button>
+
         {med.paused && <Badge variant="default">Pausado</Badge>}
         {med.stockAlert && !med.paused && <Badge variant="danger">Estoque baixo</Badge>}
-        {!med.paused && !med.stockAlert && med.status === 'done' && (
-          <Badge variant="success">Tomado</Badge>
+        {!med.paused && !med.stockAlert && isTodayTaken && (
+          <Badge variant="success">✓ Tomado</Badge>
         )}
-        {!med.paused && !med.stockAlert && med.status === 'pending' && (
-          <Badge variant="warning">Pendente</Badge>
+        {!med.paused && !med.stockAlert && !isTodayTaken && (
+          <Badge variant="warning">⏳ Pendente</Badge>
         )}
       </div>
 
@@ -204,10 +244,12 @@ function MedCard({ med }) {
             ? 'Uso contínuo'
             : med.paused
             ? 'Tratamento pausado'
+            : isTodayTaken
+            ? '✓ Tomado hoje!'
             : 'Hoje às'}
         </span>
 
-        {med.time && (
+        {med.time && !isTodayTaken && (
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 5 }}>
             ⏰ {med.time}
           </span>
@@ -230,17 +272,51 @@ function MedCard({ med }) {
           {med.description}
         </p>
       )}
+
+      {/* Click hint */}
+      {!med.paused && !isTodayTaken && (
+        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', marginTop: 4 }}>
+          Clique para marcar como tomado
+        </div>
+      )}
     </div>
   )
 }
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const [medications, setMedications] = useState(initialMedications)
+  const [streak, setStreak] = useState(14)
 
-  const totalStock = 142
+  const handleMarkTaken = (id) => {
+    setMedications(prev =>
+      prev.map(med =>
+        med.id === id
+          ? {
+              ...med,
+              status: 'done',
+              taken: med.taken < med.total ? med.taken + 1 : med.taken,
+            }
+          : med
+      )
+    )
+  }
+
+  const handleTogglePause = (id) => {
+    setMedications(prev =>
+      prev.map(med =>
+        med.id === id
+          ? { ...med, paused: !med.paused, status: !med.paused ? 'paused' : 'pending' }
+          : med
+      )
+    )
+  }
+
+  const totalStock = medications.reduce((acc, m) => acc + m.taken, 0)
   const totalMeds = medications.length
   const pausedCount = medications.filter((m) => m.paused).length
-  const streakDays = 14
+  const allTakenToday = medications.filter(m => !m.paused && m.status === 'done').length
+  const totalActiveMeds = medications.filter(m => !m.paused).length
 
   return (
     <div className={s.page}>
@@ -262,13 +338,13 @@ export default function Dashboard() {
         >
           <Card>
             <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              Dose Inventory
+              Doses Today
             </p>
-            <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1 }}>
-              {totalStock}
+            <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--green-500)', lineHeight: 1 }}>
+              {allTakenToday}/{totalActiveMeds}
             </p>
             <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 6 }}>
-              available doses
+              medications taken
             </p>
           </Card>
 
@@ -301,7 +377,7 @@ export default function Dashboard() {
               <span style={{ fontSize: 28 }}>🔥</span>
               <div>
                 <p style={{ fontSize: 36, fontWeight: 900, color: 'var(--color-success)', lineHeight: 1 }}>
-                  {streakDays}
+                  {streak}
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 4 }}>
                   consecutive days
@@ -313,7 +389,14 @@ export default function Dashboard() {
 
         {/* MEDICAMENTOS */}
         <Card>
-          <SectionHeader title="Medicamentos em uso" />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <SectionHeader title="Medicamentos em uso" />
+            {allTakenToday === totalActiveMeds && totalActiveMeds > 0 && (
+              <Badge variant="success" style={{ fontSize: 14 }}>
+                ✓ All taken today!
+              </Badge>
+            )}
+          </div>
 
           <div
             style={{
@@ -323,7 +406,12 @@ export default function Dashboard() {
             }}
           >
             {medications.map((med) => (
-              <MedCard key={med.id} med={med} />
+              <MedCard 
+                key={med.id} 
+                med={med} 
+                onMarkTaken={handleMarkTaken}
+                onTogglePause={handleTogglePause}
+              />
             ))}
           </div>
         </Card>

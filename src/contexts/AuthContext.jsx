@@ -5,7 +5,7 @@ import * as authService from '../services/authService'
 
 const AuthContext = createContext({})
 
-const DEV_MODE = true // ← false quando conectar o Supabase
+const DEV_MODE = false
 
 const DEV_USER = {
   id: 'dev-user-id',

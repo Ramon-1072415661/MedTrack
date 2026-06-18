@@ -53,15 +53,17 @@ function calcDaysLeft(med) {
   return Math.ceil(totalUnits / Math.max(unitsPerDay, 1))
 }
 
-// ── % da barra: dias passados ÷ total de dias do tratamento ──────────────────
-function calcProgressPercent(med) {
-  if (med.continuousUse || !med.startDate) return 0
-  const totalDays = calcTotalDays(med)
-  if (!totalDays) return 0
-  const today = new Date(); today.setHours(0,0,0,0)
-  const start = new Date(med.startDate); start.setHours(0,0,0,0)
-  const daysPassed = Math.max(0, Math.floor((today - start) / (1000 * 60 * 60 * 24)))
-  return Math.min(100, Math.max(2, Math.round((daysPassed / totalDays) * 100)))
+// ── % da barra: estoque consumido ÷ estoque original ─────────────────────────
+// Recebe quantConsumed (doses tomadas × unidades/dose).
+// Se nunca tomou nada, retorna 0. Só avança quando toma o remédio.
+function calcProgressPercent(med, quantConsumed) {
+  if (med.continuousUse || !med.quantity) return 0
+  const consumed = quantConsumed ?? 0
+  if (consumed <= 0) return 0
+  const current = parseInt(med.quantity) || 0
+  const original = current + consumed
+  if (original <= 0) return 0
+  return Math.min(100, Math.round((consumed / original) * 100))
 }
 
 function scheduleLabel(med) {
@@ -77,7 +79,7 @@ function doseLabel(med) {
 }
 
 // ── Card individual ───────────────────────────────────────────────────────────
-function MedCard({ med, takenToday, onClickTake, onClickPause }) {
+function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) {
   const paused   = !med.active
   const lowStock = med.quantity && parseInt(med.quantity) <= 5
   const daysLeft = calcDaysLeft(med)
@@ -141,7 +143,7 @@ function MedCard({ med, takenToday, onClickTake, onClickPause }) {
           <div style={{ height: 5, background: 'var(--color-border)', borderRadius: 999, overflow: 'hidden' }}>
             <div style={{
               height: '100%',
-              width: `${calcProgressPercent(med)}%`,
+              width: `${calcProgressPercent(med, quantConsumed)}%`,
               background: daysLeft <= 3 ? 'var(--color-danger)' : 'var(--blue-500)',
               borderRadius: 999, transition: 'width .4s',
             }} />
@@ -179,6 +181,14 @@ function MedCard({ med, takenToday, onClickTake, onClickPause }) {
       )}
     </div>
   )
+}
+
+// ── Calcula unidades consumidas por med a partir dos logs ────────────────────
+function calcQuantConsumed(med, allLogs) {
+  const logs = allLogs.filter(l => Number(l.med_id) === Number(med.id) && l.was_taken)
+  if (logs.length === 0) return 0
+  const unitsPerDose = med.doseType === 'liquid' ? 1 : (parseInt(med.doseCapsules) || 1)
+  return logs.length * unitsPerDose
 }
 
 // ── Tela principal ────────────────────────────────────────────────────────────
@@ -346,6 +356,7 @@ export default function Dashboard() {
                   takenToday={isTakenToday(med)}
                   onClickTake={m => setConfirmMed(m)}
                   onClickPause={m => setPauseMed(m)}
+                  quantConsumed={calcQuantConsumed(med, allLogs)}
                 />
               ))}
             </div>

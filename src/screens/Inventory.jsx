@@ -173,7 +173,7 @@ function MedForm({ initial, onSave, onCancel, saving }) {
               style={iStyle}
               value={form.doseMl}
               onChange={e => set('doseMl', e.target.value)}
-              placeholder="Ex: 5"
+              placeholder="Ex: 250"
             />
           </div>
           <div>

@@ -146,10 +146,21 @@ export async function toggleActiveMedicamento(id, active, profileId) {
 
 // ── Busca todos os logs (para calcular sequência de dias) ─────────────────────
 export async function fetchAllLogs(profileId) {
+  // Busca ids dos meds do usuário primeiro (evita bug do filtro via join)
+  const { data: meds, error: medsError } = await supabase
+    .from('medication')
+    .select('id_med')
+    .eq('profile_id', profileId)
+
+  if (medsError) throw medsError
+  if (!meds || meds.length === 0) return []
+
+  const medIds = meds.map(m => m.id_med)
+
   const { data, error } = await supabase
     .from('dose_log')
-    .select('*, medication!inner(profile_id)')
-    .eq('medication.profile_id', profileId)
+    .select('*')
+    .in('med_id', medIds)
     .order('scheduled_for', { ascending: false })
     .limit(365)
 

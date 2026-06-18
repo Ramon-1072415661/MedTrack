@@ -38,7 +38,9 @@ function buildNotifications(medications, todayLogs) {
         if (!hasReminder) notifications.push({ id: `missed-${med.id}`, unread: true })
       }
     }
-    if (med.quantity && parseInt(med.quantity) <= 5) {
+    if (med.quantity && parseInt(med.quantity) === 0) {
+      notifications.push({ id: `out-of-stock-${med.id}`, unread: true })
+    } else if (med.quantity && parseInt(med.quantity) <= 5) {
       notifications.push({ id: `stock-${med.id}`, unread: true })
     }
   }

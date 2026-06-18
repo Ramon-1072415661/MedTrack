@@ -69,17 +69,18 @@ function doseLabel(med) {
 }
 
 // ── Card individual ───────────────────────────────────────────────────────────
-function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) {
+function MedCard({ med, takenToday, takenDosesToday, onClickTake, onClickPause, quantConsumed }) {
   const paused  = !med.active
   const daysLeft = calcDaysLeft(med)
   // Baixo estoque: líquido = < 2 doses restantes, cápsula = <= 5 unidades
   const stock    = getStockUnits(med)
   const perDose  = getUnitsPerDose(med)
-  const lowStock = stock > 0 && perDose > 0 && (stock / perDose) <= (med.doseType === 'liquid' ? 2 : 5)
+  const outOfStock = stock === 0
+  const lowStock = !outOfStock && perDose > 0 && (stock / perDose) <= (med.doseType === 'liquid' ? 2 : 5)
 
   return (
     <div
-      onClick={() => !paused && !takenToday && onClickTake(med)}
+      onClick={() => !paused && !takenToday && !outOfStock && onClickTake(med)}
       style={{
         background: 'var(--color-surface)',
         border: `1px solid ${lowStock ? 'var(--color-danger)' : 'var(--color-border)'}`,
@@ -89,11 +90,11 @@ function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) 
         flexDirection: 'column',
         gap: 12,
         opacity: paused ? 0.6 : 1,
-        cursor: paused || takenToday ? 'default' : 'pointer',
+        cursor: paused || takenToday || outOfStock ? 'default' : 'pointer',
         transition: 'box-shadow .2s',
         boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
       }}
-      onMouseEnter={e => { if (!paused && !takenToday) e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)' }}
+      onMouseEnter={e => { if (!paused && !takenToday && !outOfStock) e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)' }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)' }}
     >
       {/* Cabeçalho */}
@@ -119,9 +120,13 @@ function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) 
           {paused ? '▶️' : '⏸️'}
         </button>
 
-        {paused      && <Badge variant="default">Pausado</Badge>}
-        {!paused && takenToday  && <Badge variant="success">✓ Tomado</Badge>}
-        {!paused && !takenToday && <Badge variant="warning">⏳ Pendente</Badge>}
+        {paused && <Badge variant="default">Pausado</Badge>}
+        {!paused && outOfStock && <Badge variant="danger">🚫 Sem estoque</Badge>}
+        {!paused && !outOfStock && takenToday && <Badge variant="success">✓ Tomado</Badge>}
+        {!paused && !outOfStock && !takenToday && takenDosesToday > 0 && (
+          <Badge variant="info">{takenDosesToday}/{getDosesPerDay(med)} doses</Badge>
+        )}
+        {!paused && !outOfStock && !takenToday && takenDosesToday === 0 && <Badge variant="warning">⏳ Pendente</Badge>}
       </div>
 
       {/* Barra de progresso do tratamento */}
@@ -182,8 +187,12 @@ function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) 
       )}
 
       {!paused && !takenToday && (
-        <p style={{ fontSize: 11, color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
-          Clique para marcar como tomado
+        <p style={{ fontSize: 11, color: outOfStock ? 'var(--color-danger)' : 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
+          {outOfStock
+            ? '🚫 Estoque esgotado — atualize no Inventário'
+            : getDosesPerDay(med) > 1
+              ? `${takenDosesToday}/${getDosesPerDay(med)} doses — clique para registrar`
+              : 'Clique para marcar como tomado'}
         </p>
       )}
     </div>
@@ -232,17 +241,24 @@ export default function Dashboard() {
 
   useEffect(() => { loadData() }, [loadData])
 
+  function dosesTakenToday(med) {
+    return todayLogs.filter(log => String(log.med_id) === String(med.id) && log.was_taken).length
+  }
+
   function isTakenToday(med) {
-    return todayLogs.some(log => log.med_id === med.id && log.was_taken)
+    return dosesTakenToday(med) >= getDosesPerDay(med)
   }
 
   // Confirmar dose
   async function handleConfirmTaken() {
     if (!confirmMed) return
+    if (parseInt(confirmMed.quantity) === 0) {
+      alert('Estoque esgotado. Adicione mais unidades no Inventário.')
+      setConfirmMed(null)
+      return
+    }
     try {
-      // Registra no log de doses
       await logDose(confirmMed.id, true)
-      // Desconta do estoque com a lógica correta por tipo de dose
       if (confirmMed.quantity) {
         await decrementStock(confirmMed, profileId)
       }
@@ -360,6 +376,7 @@ export default function Dashboard() {
                   key={med.id}
                   med={med}
                   takenToday={isTakenToday(med)}
+                  takenDosesToday={dosesTakenToday(med)}
                   onClickTake={m => setConfirmMed(m)}
                   onClickPause={m => setPauseMed(m)}
                   quantConsumed={calcQuantConsumed(med, allLogs)}

@@ -87,7 +87,25 @@ function buildNotifications(medications, todayLogs) {
         })()
       : `apenas ${med.quantity} unidade${parseInt(med.quantity) !== 1 ? 's' : ''}`
 
-    if (isLowStock) {
+    // ── Estoque zerado ───────────────────────────────────────────────────────
+    const stockZero = med.doseType === 'liquid'
+      ? parseInt(med.quantity) === 0
+      : parseInt(med.quantity) === 0
+
+    if (stockZero) {
+      notifications.push({
+        id: `out-of-stock-${med.id}`,
+        type: 'warning',
+        title: 'Estoque esgotado',
+        message: `${med.name} não tem mais unidades. Adicione estoque no Inventário para continuar o tratamento.`,
+        medId: med.id,
+        medName: med.name,
+        unread: true,
+        urgent: true,
+      })
+    }
+
+    if (!stockZero && isLowStock) {
       notifications.push({
         id: `stock-${med.id}`,
         type: 'stock',

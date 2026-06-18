@@ -34,10 +34,10 @@ export default function ForgotPassword({ onNavigate }) {
         <main className={s.authMain}>
           <div className={s.authCard} style={{ textAlign: 'center' }}>
             <div className={s.authCardIcon}>✅</div>
-            <h1 className={s.authCardTitle}>E-mail sent</h1>
+            <h1 className={s.authCardTitle}>E-mail enviado</h1>
             <p className={s.authCardSubtitle}>
-              Check your inbox at <strong>{values.email}</strong> and click the link
-              to reset your password.
+              Confira seu e-mail em <strong>{values.email}</strong> e clique no link
+              para redefinir sua senha.
             </p>
             <Button
               variant="ghost"
@@ -102,7 +102,7 @@ export default function ForgotPassword({ onNavigate }) {
               disabled={loading}
               onClick={handleReset}
             >
-              {loading ? 'Sending…' : 'Enviar link de recuperação →'}
+              {loading ? 'Enviando…' : 'Enviar link de recuperação →'}
             </Button>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--slate-400)' }}>

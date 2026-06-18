@@ -173,7 +173,7 @@ function MedForm({ initial, onSave, onCancel, saving }) {
               style={iStyle}
               value={form.doseMl}
               onChange={e => set('doseMl', e.target.value)}
-              placeholder="Ex: 250"
+              placeholder="Ex: 5"
             />
           </div>
           <div>
@@ -337,15 +337,22 @@ function MedForm({ initial, onSave, onCancel, saving }) {
       {/* Quantidade + datas */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
-          <label style={lStyle}>Quantidade em estoque (unidades) *</label>
+          <label style={lStyle}>
+            {form.doseType === 'liquid' ? 'Número de recipientes *' : 'Quantidade em estoque (unidades) *'}
+          </label>
           <input
             type="number"
             min="1"
             style={iStyle}
             value={form.quantity}
             onChange={e => { set('quantity', e.target.value); set('endDate', '') }}
-            placeholder="Ex: 30"
+            placeholder={form.doseType === 'liquid' ? 'Ex: 10 frascos' : 'Ex: 30'}
           />
+          {form.doseType === 'liquid' && form.quantity && form.containerMl && (
+            <p style={{ fontSize: 11, color: 'var(--color-primary)', marginTop: 4, fontWeight: 600 }}>
+              = {(parseFloat(form.quantity) * parseFloat(form.containerMl)).toLocaleString('pt-BR')} ml no total
+            </p>
+          )}
         </div>
         {!form.continuousUse && (
           <div>
@@ -593,7 +600,14 @@ export default function Inventory() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {medications.map(med => {
                 const forecast = calcForecast(med)
-                const lowStock = med.quantity && parseInt(med.quantity) <= 5
+                // Líquido: baixo = 1 frasco restante (stock <= containerMl)
+                // Cápsula: baixo = 3 unidades restantes
+                const stockUnits = med.doseType === 'liquid' && med.containerMl
+                  ? (med.quantMl ?? parseFloat(med.quantity) * parseFloat(med.containerMl))
+                  : parseInt(med.quantity)
+                const lowStock = med.doseType === 'liquid' && med.containerMl
+                  ? stockUnits <= parseFloat(med.containerMl)
+                  : parseInt(med.quantity) <= 3 && parseInt(med.quantity) > 0
 
                 return (
                   <div
@@ -621,7 +635,10 @@ export default function Inventory() {
                         {doseLabel(med)} · {scheduleLabel(med)}
                       </p>
                       <p style={{ fontSize: 13, marginTop: 2 }}>
-                        Estoque: <strong>{med.quantity}</strong> unidades
+                        {med.doseType === 'liquid' && med.containerMl
+                          ? <>Estoque: <strong>{med.quantity}</strong> frascos ({parseFloat(med.quantity) * parseFloat(med.containerMl)}ml)</>
+                          : <>Estoque: <strong>{med.quantity}</strong> unidades</>
+                        }
                       </p>
                       {forecast && (
                         <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>

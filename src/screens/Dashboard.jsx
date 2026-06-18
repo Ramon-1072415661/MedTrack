@@ -12,55 +12,45 @@ import {
 } from '../services/medicamentoService'
 import s from './screens.module.css'
 
-// ── Duração total do tratamento em dias ──────────────────────────────────────
-function calcTotalDays(med) {
-  if (med.continuousUse || !med.quantity) return null
+// ── Helpers de unidades ──────────────────────────────────────────────────────
+// Para líquido: quant no banco = ml total. doseMl = ml por dose.
+// Para cápsula: quant = comprimidos. doseCapsules = comprimidos por dose.
 
-  // Se tem data de início e de fim (manual ou calculada), usa a diferença real
-  if (med.startDate && med.endDate) {
-    const start = new Date(med.startDate); start.setHours(0,0,0,0)
-    const end   = new Date(med.endDate);   end.setHours(0,0,0,0)
-    return Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)))
+function getStockUnits(med) {
+  // Retorna o estoque em unidades "brutas" do banco
+  // Líquido: quantMl (ml real) ou reconstrói de quantity × containerMl
+  if (med.doseType === 'liquid') {
+    return med.quantMl ?? (parseFloat(med.quantity) * parseFloat(med.containerMl || 1))
   }
-
-  // Senão calcula pelo estoque + dose
-  const dosesPerDay = med.frequency === 'hourly'
-    ? Math.floor(24 / (parseInt(med.intervalHours) || 8))
-    : (med.scheduleTimes?.length || 1)
-  const unitsPerDose = med.doseType === 'liquid'
-    ? parseFloat(med.doseMl) || 1
-    : parseInt(med.doseCapsules) || 1
-  const unitsPerDay = dosesPerDay * unitsPerDose
-  const totalUnits = med.doseType === 'liquid'
-    ? parseInt(med.quantity) * (parseFloat(med.containerMl) || 1)
-    : parseInt(med.quantity)
-  return Math.ceil(totalUnits / Math.max(unitsPerDay, 1))
+  return parseInt(med.quantity) || 0
 }
 
-// ── Dias restantes: estoque atual ÷ consumo diário ───────────────────────────
+function getUnitsPerDose(med) {
+  if (med.doseType === 'liquid') return parseFloat(med.doseMl) || 0
+  return parseInt(med.doseCapsules) || 1
+}
+
+function getDosesPerDay(med) {
+  if (med.frequency === 'hourly') return Math.floor(24 / (parseInt(med.intervalHours) || 8))
+  return med.scheduleTimes?.length || 1
+}
+
+// ── Dias restantes ────────────────────────────────────────────────────────────
 function calcDaysLeft(med) {
-  if (med.continuousUse || !med.quantity) return null
-  const dosesPerDay = med.frequency === 'hourly'
-    ? Math.floor(24 / (parseInt(med.intervalHours) || 8))
-    : (med.scheduleTimes?.length || 1)
-  const unitsPerDose = med.doseType === 'liquid'
-    ? parseFloat(med.doseMl) || 1
-    : parseInt(med.doseCapsules) || 1
-  const unitsPerDay = dosesPerDay * unitsPerDose
-  const totalUnits = med.doseType === 'liquid'
-    ? parseInt(med.quantity) * (parseFloat(med.containerMl) || 1)
-    : parseInt(med.quantity)
-  return Math.ceil(totalUnits / Math.max(unitsPerDay, 1))
+  if (med.continuousUse) return null
+  const stock    = getStockUnits(med)
+  const perDose  = getUnitsPerDose(med)
+  const perDay   = getDosesPerDay(med) * perDose
+  if (!stock || !perDay) return null
+  return Math.ceil(stock / perDay)
 }
 
 // ── % da barra: estoque consumido ÷ estoque original ─────────────────────────
-// Recebe quantConsumed (doses tomadas × unidades/dose).
-// Se nunca tomou nada, retorna 0. Só avança quando toma o remédio.
 function calcProgressPercent(med, quantConsumed) {
-  if (med.continuousUse || !med.quantity) return 0
+  if (med.continuousUse) return 0
   const consumed = quantConsumed ?? 0
   if (consumed <= 0) return 0
-  const current = parseInt(med.quantity) || 0
+  const current  = getStockUnits(med)
   const original = current + consumed
   if (original <= 0) return 0
   return Math.min(100, Math.round((consumed / original) * 100))
@@ -80,9 +70,12 @@ function doseLabel(med) {
 
 // ── Card individual ───────────────────────────────────────────────────────────
 function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) {
-  const paused   = !med.active
-  const lowStock = med.quantity && parseInt(med.quantity) <= 5
+  const paused  = !med.active
   const daysLeft = calcDaysLeft(med)
+  // Baixo estoque: líquido = < 2 doses restantes, cápsula = <= 5 unidades
+  const stock    = getStockUnits(med)
+  const perDose  = getUnitsPerDose(med)
+  const lowStock = stock > 0 && perDose > 0 && (stock / perDose) <= (med.doseType === 'liquid' ? 2 : 5)
 
   return (
     <div
@@ -155,14 +148,28 @@ function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 11, color: lowStock ? 'var(--color-danger)' : 'var(--color-text-muted)' }}>
           {lowStock
-            ? `⚠ ${med.quantity} unidades restantes`
+            ? (() => {
+                if (med.doseType === 'liquid' && med.containerMl) {
+                  const frascos = (stock / parseFloat(med.containerMl)).toFixed(1).replace('.', ',')
+                  return `⚠ ${frascos} frascos restantes`
+                }
+                return `⚠ ${med.quantity} unidades restantes`
+              })()
             : med.continuousUse ? '♾️ Uso contínuo'
             : paused ? 'Tratamento pausado'
             : takenToday ? '✓ Tomado hoje!'
             : `📅 ${scheduleLabel(med)}`}
         </span>
         <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-          {med.quantity ? `Estoque: ${med.quantity}` : ''}
+          {med.doseType === 'liquid' && med.containerMl
+            ? (() => {
+                const frascos = stock / parseFloat(med.containerMl)
+                const label = Number.isInteger(frascos)
+                  ? frascos
+                  : frascos.toFixed(1).replace('.', ',')
+                return stock > 0 ? `${label} frasco${frascos !== 1 ? 's' : ''} restante${frascos !== 1 ? 's' : ''}` : 'Estoque esgotado'
+              })()
+            : (med.quantity ? `Estoque: ${med.quantity}` : '')}
         </span>
       </div>
 
@@ -187,8 +194,7 @@ function MedCard({ med, takenToday, onClickTake, onClickPause, quantConsumed }) 
 function calcQuantConsumed(med, allLogs) {
   const logs = allLogs.filter(l => Number(l.med_id) === Number(med.id) && l.was_taken)
   if (logs.length === 0) return 0
-  const unitsPerDose = med.doseType === 'liquid' ? 1 : (parseInt(med.doseCapsules) || 1)
-  return logs.length * unitsPerDose
+  return logs.length * getUnitsPerDose(med)
 }
 
 // ── Tela principal ────────────────────────────────────────────────────────────

@@ -74,12 +74,25 @@ function buildNotifications(medications, todayLogs) {
     }
 
     // ── Estoque baixo ─────────────────────────────────────────────────────────
-    if (med.quantity && parseInt(med.quantity) <= 5 && parseInt(med.quantity) > 0) {
+    // Líquido: alerta ao chegar em 1 frasco (stock <= containerMl)
+    // Cápsula: alerta ao chegar em 3 unidades
+    const isLowStock = med.doseType === 'liquid' && med.containerMl
+      ? (med.quantMl ?? parseFloat(med.quantity) * parseFloat(med.containerMl)) <= parseFloat(med.containerMl)
+      : parseInt(med.quantity) <= 3 && parseInt(med.quantity) > 0
+
+    const stockLabel = med.doseType === 'liquid' && med.containerMl
+      ? (() => {
+          const frascos = ((med.quantMl ?? parseFloat(med.quantity) * parseFloat(med.containerMl)) / parseFloat(med.containerMl)).toFixed(1).replace('.', ',')
+          return `apenas ${frascos} frasco${frascos !== '1,0' ? 's' : ''}`
+        })()
+      : `apenas ${med.quantity} unidade${parseInt(med.quantity) !== 1 ? 's' : ''}`
+
+    if (isLowStock) {
       notifications.push({
         id: `stock-${med.id}`,
         type: 'stock',
         title: 'Estoque baixo',
-        message: `${med.name} tem apenas ${med.quantity} unidade${parseInt(med.quantity) > 1 ? 's' : ''} restante${parseInt(med.quantity) > 1 ? 's' : ''}`,
+        message: `${med.name} tem ${stockLabel} restante${med.doseType === 'liquid' ? 's' : ''}`,
         medId: med.id,
         medName: med.name,
         unread: true,
@@ -92,7 +105,11 @@ function buildNotifications(medications, todayLogs) {
       const dosesPerDay = med.frequency === 'hourly'
         ? Math.floor(24 / (parseInt(med.intervalHours) || 8))
         : (med.scheduleTimes?.length || 1)
-      const daysLeft = Math.ceil(parseInt(med.quantity) / Math.max(dosesPerDay, 1))
+      const stockUnits = med.doseType === 'liquid'
+        ? (med.quantMl ?? parseFloat(med.quantity) * parseFloat(med.containerMl || 1))
+        : parseInt(med.quantity)
+      const unitsPerDose = med.doseType === 'liquid' ? parseFloat(med.doseMl) || 1 : parseInt(med.doseCapsules) || 1
+      const daysLeft = Math.ceil(stockUnits / Math.max(dosesPerDay * unitsPerDose, 1))
       if (daysLeft <= 3 && daysLeft >= 0) {
         notifications.push({
           id: `ending-${med.id}`,

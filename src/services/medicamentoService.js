@@ -3,9 +3,17 @@ import { supabase } from '../lib/supabaseClient'
 
 // ── front → banco ─────────────────────────────────────────────────────────────
 function formToDb(form, profileId) {
+  // Para líquido: quant armazena ml TOTAL (recipientes × volume/recipiente)
+  // Ex: 10 frascos × 500ml = 5000ml guardado em quant
+  // Isso permite subtrair dose_ml diretamente a cada tomada.
+  let quant = form.quantity ? parseInt(form.quantity) : null
+  if (form.doseType === 'liquid' && quant && form.containerMl) {
+    quant = quant * parseFloat(form.containerMl)
+  }
+
   return {
     name:            form.name,
-    quant:           form.quantity ? parseInt(form.quantity) : null,
+    quant:           quant,
     active:          true,
     profile_id:      profileId,
     // dose
@@ -27,10 +35,18 @@ function formToDb(form, profileId) {
 
 // ── banco → front ─────────────────────────────────────────────────────────────
 function dbToForm(row) {
+  // Para líquido: reconverte ml total → nº de recipientes para exibir no form
+  // Se container_ml=500 e quant=5000, mostra "10 frascos"
+  let quantity = String(row.quant ?? '')
+  if (row.dose_type === 'liquid' && row.container_ml && row.quant) {
+    quantity = String(Math.round(row.quant / row.container_ml))
+  }
+
   return {
     id:            row.id_med,
     name:          row.name          ?? '',
-    quantity:      String(row.quant  ?? ''),
+    quantity,
+    quantMl:       row.dose_type === 'liquid' ? row.quant : null, // ml total real
     startDate:     row.start_date    ?? '',
     continuousUse: row.continuous_use ?? false,
     doseType:      row.dose_type     ?? 'capsule',
@@ -168,81 +184,37 @@ export async function fetchAllLogs(profileId) {
   return data ?? []
 }
 
-// ── Desconta estoque com lógica correta por tipo de dose ─────────────────────
+// ── Desconta estoque por dose ────────────────────────────────────────────────
 //
-// CÁPSULA: desconta `doseCapsules` unidades por dose
-//   ex: estoque=20, doseCapsules=10 → após 1 dose: estoque=10
+// CÁPSULA: quant = nº de comprimidos. Subtrai dose_capsules por tomada.
+//   ex: quant=30, dose=1 → após tomar: quant=29
 //
-// LÍQUIDO: acumula ml consumido e só desconta 1 unidade quando
-//          o total consumido >= containerMl (volume do recipiente)
-//   ex: estoque=10 frascos de 500ml, dose=250ml
-//       após dose 1: acumulado=250ml  → estoque=10 (não descontou)
-//       após dose 2: acumulado=500ml  → estoque=9  (consumiu 1 frasco)
+// LÍQUIDO: quant = ml TOTAL (recipientes × volume/recipiente).
+//   Subtrai dose_ml diretamente a cada tomada.
+//   ex: quant=5000ml, dose=250ml → após tomar: quant=4750ml
 //
 export async function decrementStock(med, profileId) {
-  const qty = parseInt(med.quantity)
-  if (!qty || qty <= 0) return
+  // Para líquido, usa quantMl (ml real no banco), não quantity (nº de frascos)
+  const currentQuant = med.doseType === 'liquid'
+    ? (med.quantMl ?? parseFloat(med.quantity) * parseFloat(med.containerMl || 1))
+    : parseInt(med.quantity)
 
-  if (med.doseType === 'capsule') {
-    // ── Cápsula/comprimido ──────────────────────────────────────────────────
-    const perDose = parseInt(med.doseCapsules) || 1
-    const newQty = Math.max(0, qty - perDose)
-    const { error } = await supabase
-      .from('medication')
-      .update({ quant: newQty })
-      .eq('id_med', med.id)
-      .eq('profile_id', profileId)
-    if (error) throw error
-    return newQty
+  if (!currentQuant || currentQuant <= 0) return
 
-  } else {
-    // ── Dose líquida ────────────────────────────────────────────────────────
-    const doseMl      = parseFloat(med.doseMl)      || 0
-    const containerMl = parseFloat(med.containerMl) || 0
-    if (!doseMl || !containerMl) return
+  const perDose = med.doseType === 'liquid'
+    ? parseFloat(med.doseMl) || 0
+    : parseInt(med.doseCapsules) || 1
 
-    // Busca total de ml já consumido do recipiente atual (via notes nos logs)
-    const { data: logs } = await supabase
-      .from('dose_log')
-      .select('notes')
-      .eq('med_id', med.id)
-      .eq('was_taken', true)
-      .order('taken_at', { ascending: false })
+  if (!perDose) return
 
-    // Acumula ml das doses anteriores até encontrar uma que zerou (novo frasco)
-    let mlAccumulated = 0
-    for (const log of (logs ?? [])) {
-      if (!log.notes) continue
-      try {
-        const meta = JSON.parse(log.notes)
-        if (meta.newContainer) break   // início de um novo frasco, para aqui
-        mlAccumulated += meta.mlThisDose ?? 0
-      } catch { /* ignora */ }
-    }
+  const newQuant = Math.max(0, currentQuant - perDose)
 
-    const mlAfterThisDose = mlAccumulated + doseMl
-    const containersConsumed = Math.floor(mlAfterThisDose / containerMl)
-    const newQty = Math.max(0, qty - containersConsumed)
-    const isNewContainer = mlAfterThisDose >= containerMl
+  const { error } = await supabase
+    .from('medication')
+    .update({ quant: newQuant })
+    .eq('id_med', med.id)
+    .eq('profile_id', profileId)
 
-    // Salva metadado desta dose no notes do log mais recente
-    await supabase
-      .from('dose_log')
-      .update({ notes: JSON.stringify({ mlThisDose: doseMl, newContainer: isNewContainer }) })
-      .eq('med_id', med.id)
-      .eq('was_taken', true)
-      .order('taken_at', { ascending: false })
-      .limit(1)
-
-    if (containersConsumed > 0) {
-      const { error } = await supabase
-        .from('medication')
-        .update({ quant: newQty })
-        .eq('id_med', med.id)
-        .eq('profile_id', profileId)
-      if (error) throw error
-    }
-
-    return newQty
-  }
+  if (error) throw error
+  return newQuant
 }

@@ -52,7 +52,7 @@ function calcForecastDate(med) {
 
   const daysTotal = Math.ceil(totalUnits / Math.max(unitsPerDay, 1))
   const end = new Date(med.startDate)
-  end.setDate(end.getDate() + daysTotal)
+  end.setDate(end.getDate() + daysTotal - 1)
   return end.toISOString().split('T')[0]
 }
 

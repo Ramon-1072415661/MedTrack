@@ -44,7 +44,7 @@ export default function ForgotPassword({ onNavigate }) {
               style={{ marginTop: 16 }}
               onClick={() => onNavigate(SCREENS.LOGIN.id)}
             >
-              Back to login
+              Voltar ao Login
             </Button>
           </div>
         </main>
@@ -66,23 +66,23 @@ export default function ForgotPassword({ onNavigate }) {
           <span className={s.authLogoText}>MedTrack</span>
         </div>
         <Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-          Back to login
+          Voltar ao Login
         </Button>
       </header>
 
       <main className={s.authMain}>
         <div className={s.authCard}>
           <div className={s.authCardIcon}>🔒</div>
-          <h1 className={s.authCardTitle}>Forgot password?</h1>
+          <h1 className={s.authCardTitle}>Esqueceu sua senha?</h1>
           <p className={s.authCardSubtitle}>
-            Enter your email and we'll send you a link to create a new password.
+            Insira seu e-mail e enviaremos um link para você criar uma nova senha.
           </p>
 
           <div className={s.formStack}>
             <Input
               label="E-mail"
               type="email"
-              placeholder="your-email@example.com"
+              placeholder="seu_email@exemplo.com"
               {...bind('email')}
             />
 
@@ -102,13 +102,13 @@ export default function ForgotPassword({ onNavigate }) {
               disabled={loading}
               onClick={handleReset}
             >
-              {loading ? 'Sending…' : 'Send recovery link →'}
+              {loading ? 'Sending…' : 'Enviar link de recuperação →'}
             </Button>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--slate-400)' }}>
-              Remember your password?{' '}
+              Lembra da sua senha?{' '}
               <a className={s.authLink} onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-                Sign in
+                Entrar
               </a>
             </p>
           </div>

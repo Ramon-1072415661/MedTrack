@@ -24,7 +24,7 @@ function AuthHeader({ action }) {
 export function Welcome({ onNavigate }) {
   return (
     <div className={s.authPage}>
-      <AuthHeader action={<Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.LOGIN.id)}>Sign in</Button>} />
+      <AuthHeader action={<Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.LOGIN.id)}>Entrar</Button>} />
       <main className={s.authMain}>
         <div className={s.welcomeGrid}>
 
@@ -32,24 +32,24 @@ export function Welcome({ onNavigate }) {
           <section className={s.welcomeHero}>
             <div className={s.welcomeBadge}>
               <span className={s.welcomeBadgeDot} />
-              <span>Your Health, Simplified</span>
+              <span>Sua saúde, simplificada</span>
             </div>
 
             <h1 className={s.welcomeTitle}>
-              Stay on top of your{' '}
-              <span style={{ color: 'var(--blue-600)' }}>medication</span>{' '}
-              routine.
+              Mantenha sua rotina de{' '}
+              <span style={{ color: 'var(--blue-600)' }}>medicação</span>{' '}
+              em dia.
             </h1>
 
             <p className={s.welcomeDesc}>
-              Never miss a dose again. Track prescriptions, get timely reminders,
-              and share progress with your care team — in one secure platform.
+              Nunca mais perca uma dose. Monitore suas prescrições,
+              receba lembretes oportunos e compartilhe seu progresso com sua equipe de saúde — tudo em uma plataforma segura.
             </p>
 
             <div className={s.welcomeFeatures}>
               {[
-                { icon: '✓', title: 'Smart Reminders', desc: 'Personalized alerts that adapt to your schedule.' },
-                { icon: '🛡', title: 'Secure & Private', desc: 'HIPAA compliant. Your data stays yours.' },
+                { icon: '✓', title: 'Lembretes inteligentes', desc: 'Alertas personalizados que se adaptam à sua rotina.' },
+                { icon: '🛡', title: 'Seguro e privado', desc: 'Em conformidade com a HIPAA. Seus dados permanecem seus.' },
               ].map(f => (
                 <div key={f.title} className={s.welcomeFeatureRow}>
                   <div className={s.welcomeFeatureIcon}>{f.icon}</div>
@@ -65,17 +65,17 @@ export function Welcome({ onNavigate }) {
           {/* Auth card */}
           <div className={s.authCard}>
             <div className={s.authCardIcon}>💊</div>
-            <h2 className={s.authCardTitle}>Welcome Back</h2>
-            <p className={s.authCardSubtitle}>Continue your wellness journey</p>
+            <h2 className={s.authCardTitle}>Bem vindo de volta</h2>
+            <p className={s.authCardSubtitle}>Continue sua jornada de bem-estar.</p>
             <div className={s.formStack}>
               <Button size="lg" style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-                Continue with Email
+                Continuar com o E-mail
               </Button>
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 4 }}>
-                New to MedTrack?{' '}
+                É novo no MedTrack?{' '}
                 <a className={s.authLink} onClick={() => onNavigate(SCREENS.SIGNUP.id)}>
-                  Create an account
+                  Crie uma conta.
                 </a>
               </p>
             </div>

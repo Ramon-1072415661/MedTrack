@@ -472,6 +472,21 @@
   margin-top: 2px;
 }
 
+/* Stats grid — Dashboard */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
 /* Mobile — stack hero above card */
 @media (max-width: 768px) {
   .page {

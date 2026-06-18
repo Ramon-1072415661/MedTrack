@@ -7,7 +7,7 @@ import { SCREENS } from '../config/screens.js'
 import s from './screens.module.css'
 
 export default function SignUp({ onNavigate }) {
-  const { bind, values } = useForm({ email: '', password: '', confirm: '' })
+  const { bind, values } = useForm({ email: '', password: '', confirm: '', fullName: '' })
   const { signUp } = useAuth()
 
   const [loading, setLoading] = useState(false)
@@ -103,6 +103,12 @@ export default function SignUp({ onNavigate }) {
               label="Password"
               placeholder="Minimum 6 characters"
               {...bind('password')}
+            />
+
+            <Input
+              label="Full name"
+              placeholder="Your full name"
+              {...bind('fullName')}
             />
 
             <PasswordInput

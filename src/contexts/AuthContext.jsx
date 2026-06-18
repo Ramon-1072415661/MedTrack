@@ -1,24 +1,43 @@
 // src/contexts/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react'
-import { fetchProfile, updateProfile as updateProfileService } from '../services/profileService'
+import { fetchProfile, createProfile, updateProfile as updateProfileService } from '../services/profileService'
 import * as authService from '../services/authService'
 
 const AuthContext = createContext({})
 
+const DEV_MODE = false
+
+const DEV_USER = {
+  id: 'dev-user-id',
+  email: 'dev@teste.com',
+  created_at: new Date().toISOString(),
+}
+
+const DEV_PROFILE = {
+  id: 'dev-user-id',
+  full_name: 'Dev User',
+  avatar_url: null,
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(DEV_MODE ? DEV_USER : null)
+  const [profile, setProfile] = useState(DEV_MODE ? DEV_PROFILE : null)
+  const [loading, setLoading] = useState(!DEV_MODE)
 
   async function loadProfile(userId) {
     try {
-      const data = await fetchProfile(userId)
+      let data = await fetchProfile(userId)
+
+      // Usuário existe no Auth mas não tem perfil ainda
+      // (cadastrado antes dessa lógica existir, ou email não confirmado)
+      if (!data) {
+        data = await createProfile({ id: userId, full_name: '' })
+      }
+
       setProfile(data)
     } catch (err) {
-      console.error('fetchProfile:', err)
+      console.error('loadProfile error:', err)
       setProfile(null)
-
-      // Permission Error — signout user to avoid unauthenticated access
       if (err?.code === '42501') {
         await authService.signOut()
       }
@@ -26,21 +45,20 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    if (DEV_MODE) return
+
     authService.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       setLoading(false)
-
       if (currentUser) loadProfile(currentUser.id)
     })
 
     const { data: { subscription } } = authService.onAuthStateChange(
       (event, session) => {
         if (event === 'INITIAL_SESSION') return
-
         const currentUser = session?.user ?? null
         setUser(currentUser)
-
         if (currentUser) {
           loadProfile(currentUser.id)
         } else {

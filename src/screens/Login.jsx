@@ -23,7 +23,7 @@ export default function Login({ onNavigate }) {
 
     if (err) {
       setError(err.message === 'Invalid login credentials'
-        ? 'E-mail or password is incorrect.'
+        ? 'E-mail ou senha está incorreta.'
         : err.message
       )
       setLoading(false)

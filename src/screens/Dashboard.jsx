@@ -326,7 +326,7 @@ export default function Dashboard() {
       <div className={s.content}>
 
         {/* STATS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 16 }}>
+        <div className={s.statsGrid}>
           <Card>
             <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Doses hoje</p>
             <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--green-500)', lineHeight: 1 }}>{takenCount}/{activeMeds.length}</p>

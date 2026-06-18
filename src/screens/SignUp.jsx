@@ -18,16 +18,16 @@ export default function SignUp({ onNavigate }) {
     setError(null)
 
     if (values.password !== values.confirm) {
-      setError('Passwords do not match.')
+      setError('As senhas não coincidem.')
       return
     }
     if (values.password.length < 6) {
-      setError('Password must be at least 6 characters.')
+      setError('A senha deve ter pelo menos 6 caracteres.')
       return
     }
 
     if (values.password.length > 72) {
-      setError('Password must be at most 72 characters.')
+      setError('A senha deve ter no máximo 72 caracteres.')
       return
     }
 
@@ -37,7 +37,7 @@ export default function SignUp({ onNavigate }) {
       await signUp(values.email, values.password, values.fullName)
       setSuccess(true)
     } catch (err) {
-      setError("Could not create account. Try again.")
+      setError("Não foi possível criar a conta. Tente novamente.")
     } finally {
       setLoading(false)
     }
@@ -49,17 +49,17 @@ export default function SignUp({ onNavigate }) {
         <main className={s.authMain}>
           <div className={s.authCard} style={{ textAlign: 'center' }}>
             <div className={s.authCardIcon}>📧</div>
-            <h1 className={s.authCardTitle}>Check Your Email</h1>
+            <h1 className={s.authCardTitle}>Verifique seu Email</h1>
             <p className={s.authCardSubtitle}>
-              We've sent a confirmation link to <strong>{values.email}</strong>.
-              Click it to activate your account.
+              Enviamos um link de confirmação para <strong>{values.email}</strong>.
+              Clique nele para ativar sua conta.
             </p>
             <Button
               variant="ghost"
               style={{ marginTop: 16 }}
               onClick={() => onNavigate(SCREENS.LOGIN.id)}
             >
-              Back to Login
+              Voltar ao Login
             </Button>
           </div>
         </main>
@@ -81,39 +81,39 @@ export default function SignUp({ onNavigate }) {
           <span className={s.authLogoText}>MedTrack</span>
         </div>
         <Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-          Already have an account?
+          Já tem uma conta?
         </Button>
       </header>
 
       <main className={s.authMain}>
         <div className={s.authCard}>
           <div className={s.authCardIcon}>✨</div>
-          <h1 className={s.authCardTitle}>Create Account</h1>
-          <p className={s.authCardSubtitle}>Start monitoring your medications</p>
+          <h1 className={s.authCardTitle}>Criar Conta</h1>
+          <p className={s.authCardSubtitle}>Comece a monitorar seus medicamentos.</p>
 
           <div className={s.formStack}>
             <Input
               label="E-mail"
               type="email"
-              placeholder="your-email@example.com"
+              placeholder="seu-email@exemplo.com"
               {...bind('email')}
             />
 
             <PasswordInput
-              label="Password"
-              placeholder="Minimum 6 characters"
+              label="Senha"
+              placeholder="Mínimo 6 caracteres"
               {...bind('password')}
             />
 
             <Input
-              label="Full name"
-              placeholder="Your full name"
+              label="Nome completo"
+              placeholder="Seu nome completo"
               {...bind('fullName')}
             />
 
             <PasswordInput
-              label="Confirm Password"
-              placeholder="Repeat the password"
+              label="Confirme sua senha"
+              placeholder="Repita a senha"
               {...bind('confirm')}
             />
 
@@ -133,13 +133,13 @@ export default function SignUp({ onNavigate }) {
               disabled={loading}
               onClick={handleSignUp}
             >
-              {loading ? 'Creating account…' : 'Create account →'}
+              {loading ? 'Criando conta…' : 'Criar conta →'}
             </Button>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--slate-400)' }}>
-              Already have an account?{' '}
+              Já tem uma conta?{' '}
               <a className={s.authLink} onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-                Sign in
+                Entrar
               </a>
             </p>
           </div>

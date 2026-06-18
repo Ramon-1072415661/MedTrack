@@ -44,30 +44,30 @@ export default function Login({ onNavigate }) {
           <span className={s.authLogoText}>MedTrack</span>
         </div>
         <Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.SIGNUP.id)}>
-          Create account
+          Criar uma conta
         </Button>
       </header>
 
       <main className={s.authMain}>
         <div className={s.authCard}>
           <div className={s.authCardIcon}>🔑</div>
-          <h1 className={s.authCardTitle}>Welcome back</h1>
-          <p className={s.authCardSubtitle}>Sign in to your MedTrack account</p>
+          <h1 className={s.authCardTitle}>Bem vindo de volta</h1>
+          <p className={s.authCardSubtitle}>Faça login na sua conta MedTrack.</p>
 
           <div className={s.formStack}>
             <Input
               label="E-mail"
               type="email"
-              placeholder="your-email@example.com"
+              placeholder="seu_email@exemplo.com"
               {...bind('email')}
             />
 
             <PasswordInput
-              label="Password"
-              placeholder="Your password"
+              label="Senha"
+              placeholder="Sua senha"
               forgotPassword={{
                 onClick: () => onNavigate(SCREENS.FORGOT_PASSWORD.id),
-                label: 'Forgot password?',
+                label: 'Esqueceu a senha?',
               }}
               {...bind('password')}
             />
@@ -80,7 +80,7 @@ export default function Login({ onNavigate }) {
                 style={{ width: 16, height: 16, accentColor: 'var(--blue-600)', cursor: 'pointer' }}
               />
               <span style={{ fontSize: 13, color: 'var(--slate-600)' }}>
-                Keep me signed in
+                Manter-me conectado
               </span>
             </label>
 
@@ -101,15 +101,15 @@ export default function Login({ onNavigate }) {
               disabled={loading}
               onClick={handleSignIn}
             >
-              {loading ? 'Signing in…' : 'Sign in →'}
+              {loading ? 'Signing in…' : 'Entrar →'}
             </Button>
 
             <div className={s.divider}>or</div>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--slate-400)' }}>
-              Don't have an account?{' '}
+              Não tem uma conta?{' '}
               <a className={s.authLink} onClick={() => onNavigate(SCREENS.SIGNUP.id)}>
-                Create account
+                Crie uma conta.
               </a>
             </p>
           </div>

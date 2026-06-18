@@ -34,17 +34,17 @@ export default function ForgotPassword({ onNavigate }) {
         <main className={s.authMain}>
           <div className={s.authCard} style={{ textAlign: 'center' }}>
             <div className={s.authCardIcon}>✅</div>
-            <h1 className={s.authCardTitle}>E-mail sent</h1>
+            <h1 className={s.authCardTitle}>E-mail enviado</h1>
             <p className={s.authCardSubtitle}>
-              Check your inbox at <strong>{values.email}</strong> and click the link
-              to reset your password.
+              Confira seu e-mail em <strong>{values.email}</strong> e clique no link
+              para redefinir sua senha.
             </p>
             <Button
               variant="ghost"
               style={{ marginTop: 16 }}
               onClick={() => onNavigate(SCREENS.LOGIN.id)}
             >
-              Back to login
+              Voltar ao Login
             </Button>
           </div>
         </main>
@@ -66,23 +66,23 @@ export default function ForgotPassword({ onNavigate }) {
           <span className={s.authLogoText}>MedTrack</span>
         </div>
         <Button size="sm" variant="ghost" onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-          Back to login
+          Voltar ao Login
         </Button>
       </header>
 
       <main className={s.authMain}>
         <div className={s.authCard}>
           <div className={s.authCardIcon}>🔒</div>
-          <h1 className={s.authCardTitle}>Forgot password?</h1>
+          <h1 className={s.authCardTitle}>Esqueceu sua senha?</h1>
           <p className={s.authCardSubtitle}>
-            Enter your email and we'll send you a link to create a new password.
+            Insira seu e-mail e enviaremos um link para você criar uma nova senha.
           </p>
 
           <div className={s.formStack}>
             <Input
               label="E-mail"
               type="email"
-              placeholder="your-email@example.com"
+              placeholder="seu_email@exemplo.com"
               {...bind('email')}
             />
 
@@ -102,13 +102,13 @@ export default function ForgotPassword({ onNavigate }) {
               disabled={loading}
               onClick={handleReset}
             >
-              {loading ? 'Sending…' : 'Send recovery link →'}
+              {loading ? 'Enviando…' : 'Enviar link de recuperação →'}
             </Button>
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--slate-400)' }}>
-              Remember your password?{' '}
+              Lembra da sua senha?{' '}
               <a className={s.authLink} onClick={() => onNavigate(SCREENS.LOGIN.id)}>
-                Sign in
+                Entrar
               </a>
             </p>
           </div>

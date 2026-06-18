@@ -1,11 +1,11 @@
 // src/contexts/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react'
-import { fetchProfile, updateProfile as updateProfileService } from '../services/profileService'
+import { fetchProfile, createProfile, updateProfile as updateProfileService } from '../services/profileService'
 import * as authService from '../services/authService'
 
 const AuthContext = createContext({})
 
-const DEV_MODE = true // ← false quando conectar o Supabase
+const DEV_MODE = false
 
 const DEV_USER = {
   id: 'dev-user-id',
@@ -22,14 +22,21 @@ const DEV_PROFILE = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(DEV_MODE ? DEV_USER : null)
   const [profile, setProfile] = useState(DEV_MODE ? DEV_PROFILE : null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!DEV_MODE)
 
   async function loadProfile(userId) {
     try {
-      const data = await fetchProfile(userId)
+      let data = await fetchProfile(userId)
+
+      // Usuário existe no Auth mas não tem perfil ainda
+      // (cadastrado antes dessa lógica existir, ou email não confirmado)
+      if (!data) {
+        data = await createProfile({ id: userId, full_name: '' })
+      }
+
       setProfile(data)
     } catch (err) {
-      console.error('fetchProfile:', err)
+      console.error('loadProfile error:', err)
       setProfile(null)
       if (err?.code === '42501') {
         await authService.signOut()

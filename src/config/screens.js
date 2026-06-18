@@ -9,7 +9,6 @@ export const SCREENS = {
 
   // App
   DASHBOARD:       { id: 'dashboard',       label: 'Dashboard',      auth: true, icon: '◉' },
-  HEALTH:          { id: 'healthDashboard', label: 'Health View',    auth: true, icon: '♡' },
   INVENTORY:       { id: 'inventory',       label: 'Inventory',      auth: true, icon: '⊡' },
   NOTIFICATIONS:   { id: 'notifications',   label: 'Notifications',  auth: true, icon: '◇', badge: true },
   PROFILE:         { id: 'profile',         label: 'Profile',        auth: true, icon: '⊙' },
